@@ -1,0 +1,560 @@
+
+<h2 class="sr-only">Agenda de citas de manicura con panel de administración</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:transparent;color:var(--color-text-primary)}
+.app{max-width:660px;margin:0 auto;padding:1rem 0}
+.hdr{text-align:center;margin-bottom:1.5rem}
+.hdr h1{font-size:22px;font-weight:500}
+.hdr p{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
+.tabs{display:flex;gap:8px;margin-bottom:1.5rem}
+.tab{flex:1;padding:8px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;font-weight:500;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);text-align:center;transition:all .15s}
+.tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary)}
+.view{display:none}
+.view.active{display:block}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cal-nav button{background:none;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:6px 14px;font-size:13px;cursor:pointer;color:var(--color-text-primary)}
+.cal-nav h2{font-size:15px;font-weight:500}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:1.5rem}
+.cl{text-align:center;font-size:11px;color:var(--color-text-secondary);padding:4px 0}
+.cd{text-align:center;padding:9px 4px;border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-tertiary);min-height:36px;display:flex;align-items:center;justify-content:center}
+.cd.av{background:#EAF3DE;color:#3B6D11;cursor:pointer;font-weight:500}
+.cd.av:hover{background:#C0DD97}
+.cd.sl{background:#C0DD97;color:#173404;border:2px solid #639922}
+.cd.past{opacity:.35}
+.sw{margin-bottom:1.5rem}
+.sw h3{font-size:13px;color:var(--color-text-secondary);margin-bottom:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px}
+.slot{padding:7px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;color:var(--color-text-secondary);background:var(--color-background-primary);transition:all .1s}
+.slot:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.slot.sl{background:#EAF3DE;color:#3B6D11;border-color:#639922;font-weight:500}
+.slot.tk{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:not-allowed;text-decoration:line-through}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.card h3{font-size:14px;font-weight:500;margin-bottom:1rem}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.fg input,.fg select{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:inherit}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.so{padding:10px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;color:var(--color-text-secondary);background:var(--color-background-primary);display:flex;flex-direction:column;gap:2px}
+.so:hover{border-color:var(--color-border-primary);color:var(--color-text-primary)}
+.so.sl{background:#EAF3DE;color:#3B6D11;border-color:#639922}
+.so small{font-size:11px;opacity:.7}
+.cr{display:flex;align-items:center;gap:8px;font-size:13px;padding:8px 0}
+.cr input[type=checkbox]{width:16px;height:16px;accent-color:#639922}
+.dnote{background:#FAEEDA;color:#633806;border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px;margin-top:8px;display:none}
+.btn-p{width:100%;padding:11px;background:#639922;color:#EAF3DE;border:none;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer}
+.btn-p:hover{opacity:.9}
+.btn-p:disabled{opacity:.4;cursor:not-allowed}
+.btn-s{width:100%;padding:9px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;background:none;color:var(--color-text-secondary);margin-top:8px}
+.sbox{background:#EAF3DE;border:0.5px solid #97C459;border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.sbox h3{font-size:14px;font-weight:500;color:#3B6D11;margin-bottom:.75rem}
+.sr{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#3B6D11}
+.sr span:first-child{color:#27500A;font-weight:500}
+.abtns{display:flex;gap:8px;margin-top:.75rem}
+.bcal{flex:1;padding:9px;border:0.5px solid #639922;border-radius:var(--border-radius-md);font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:#3B6D11;text-align:center;text-decoration:none;display:block}
+.bwa{flex:1;padding:9px;border:0.5px solid #25D366;border-radius:var(--border-radius-md);font-size:12px;font-weight:500;cursor:pointer;background:#25D366;color:#fff;text-align:center;text-decoration:none;display:block}
+.al{max-width:320px;margin:2rem auto;text-align:center}
+.al h2{font-size:18px;font-weight:500;margin-bottom:1.5rem}
+.al input{width:100%;padding:10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:14px;background:var(--color-background-primary);color:var(--color-text-primary);margin-bottom:12px;font-family:inherit}
+.al button{width:100%;padding:10px;background:#639922;color:#EAF3DE;border:none;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer}
+.err{color:var(--color-text-danger);font-size:12px;margin-top:8px}
+.dsel{display:flex;gap:8px;margin-bottom:1rem;overflow-x:auto;padding-bottom:4px}
+.db{padding:7px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:12px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);white-space:nowrap;flex-shrink:0}
+.db.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary)}
+.cc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:1rem;margin-bottom:8px}
+.cc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.ci h4{font-size:14px;font-weight:500}
+.ci p{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.ct{text-align:right;font-size:12px;color:var(--color-text-secondary)}
+.ct strong{font-size:14px;font-weight:500;color:var(--color-text-primary);display:block}
+.badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:500;margin-top:4px;margin-right:4px}
+.bdom{background:#FAEEDA;color:#633806}
+.bdec{background:#FBEAF0;color:#72243E}
+.cc-acts{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)}
+.btn-rea{flex:1;padding:7px;border:0.5px solid #639922;border-radius:var(--border-radius-md);font-size:12px;font-weight:500;cursor:pointer;background:none;color:#3B6D11}
+.btn-can{flex:1;padding:7px;border:0.5px solid var(--color-border-danger);border-radius:var(--border-radius-md);font-size:12px;font-weight:500;cursor:pointer;background:none;color:var(--color-text-danger)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;text-align:center}
+.stat p{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.stat strong{font-size:22px;font-weight:500}
+.tl-row{display:flex;align-items:stretch;margin-bottom:6px;gap:8px}
+.tl-t{font-size:11px;color:var(--color-text-secondary);width:40px;flex-shrink:0;padding-top:6px;text-align:right}
+.tl-b{flex:1;background:#EAF3DE;border-radius:var(--border-radius-md);padding:6px 10px;border-left:3px solid #639922;border-top-left-radius:0;border-bottom-left-radius:0}
+.tl-b p{font-size:12px;font-weight:500;color:#3B6D11}
+.tl-b small{font-size:11px;color:#27500A}
+.es{text-align:center;padding:2rem;color:var(--color-text-tertiary);font-size:13px}
+.lb{font-size:12px;color:var(--color-text-secondary);background:none;border:none;cursor:pointer;text-decoration:underline}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:1.5rem;width:90%;max-width:420px;border:0.5px solid var(--color-border-tertiary)}
+.modal h3{font-size:16px;font-weight:500;margin-bottom:1rem}
+.modal-acts{display:flex;gap:8px;margin-top:1rem}
+.steps{display:flex;gap:4px;margin-bottom:1.5rem;justify-content:center}
+.step{width:28px;height:4px;border-radius:2px;background:var(--color-border-tertiary)}
+.step.done{background:#639922}
+.info-note{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px;color:var(--color-text-secondary);margin-bottom:12px}
+.search-section{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.search-section h3{font-size:14px;font-weight:500;margin-bottom:.75rem}
+</style>
+
+<div class="app">
+  <div class="hdr">
+    <h1>Agenda tu cita 💅</h1>
+    <p>Manicura · Pedicura · Extensiones</p>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('client')">Reservar cita</div>
+    <div class="tab" onclick="switchTab('manage')">Gestionar mi cita</div>
+    <div class="tab" onclick="switchTab('admin')">Administración</div>
+  </div>
+
+  <!-- RESERVAR -->
+  <div id="view-client" class="view active">
+    <div id="step1">
+      <div class="steps"><div class="step done"></div><div class="step" id="s2"></div><div class="step" id="s3"></div></div>
+      <div class="cal-nav">
+        <button onclick="prevMonth()">← Anterior</button>
+        <h2 id="cal-title"></h2>
+        <button onclick="nextMonth()">Siguiente →</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div id="step2" style="display:none">
+      <div class="steps"><div class="step done"></div><div class="step done"></div><div class="step"></div></div>
+      <div class="sw"><h3 id="slots-title">Horarios disponibles</h3><div class="slots" id="slots-container"></div></div>
+      <div class="card">
+        <h3>Tus datos</h3>
+        <div class="fg"><label>Nombre</label><input id="inp-nombre" type="text" placeholder="Tu nombre completo"></div>
+        <div class="fg"><label>Servicio</label><div class="sg" id="serv-grid"></div></div>
+        <div class="fg">
+          <label>¿Decoración adicional?</label>
+          <div class="cr"><input type="checkbox" id="chk-dec"><span>Sí, quiero decoración (nail art, pedrería...)</span></div>
+        </div>
+        <div class="fg">
+          <label>¿A domicilio?</label>
+          <div class="cr"><input type="checkbox" id="chk-dom" onchange="toggleDom()"><span>Sí, quiero la cita en mi domicilio</span></div>
+          <div class="dnote" id="dom-note">Reserva tu cita y contáctame por WhatsApp para confirmar la dirección.</div>
+        </div>
+      </div>
+      <button class="btn-p" onclick="confirmar()">Confirmar cita</button>
+      <button class="btn-s" onclick="volverCal()">← Cambiar fecha</button>
+    </div>
+    <div id="step3" style="display:none">
+      <div class="sbox">
+        <h3>¡Cita confirmada!</h3>
+        <div id="summary-content"></div>
+      </div>
+      <div class="abtns">
+        <a id="btn-gcal" class="bcal" target="_blank">+ Google Calendar</a>
+        <a id="btn-wa" class="bwa" target="_blank">Avisar por WhatsApp</a>
+      </div>
+      <p style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:10px">Pulsa los botones para añadir la cita a tu calendario y enviarme el aviso</p>
+      <button class="btn-s" onclick="resetBooking()">Hacer otra reserva</button>
+    </div>
+  </div>
+
+  <!-- GESTIONAR MI CITA (clienta) -->
+  <div id="view-manage" class="view">
+    <div class="search-section">
+      <h3>Busca tu cita</h3>
+      <div class="info-note">Escribe tu nombre tal como lo pusiste al reservar para ver tu cita y cambiar la fecha u hora si lo necesitas.</div>
+      <div class="fg"><label>Tu nombre</label><input id="search-nombre" type="text" placeholder="Nombre completo"></div>
+      <button class="btn-p" onclick="buscarCita()">Buscar mi cita</button>
+    </div>
+    <div id="search-results"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="view-admin" class="view">
+    <div id="admin-login-wrap">
+      <div class="al">
+        <h2>Acceso administración</h2>
+        <input type="password" id="admin-pwd" placeholder="Contraseña" onkeydown="if(event.key==='Enter')adminLogin()">
+        <button onclick="adminLogin()">Entrar</button>
+        <p class="err" id="admin-err"></p>
+        <p style="font-size:11px;color:var(--color-text-tertiary);margin-top:16px">Contraseña inicial: <strong>nails2024</strong></p>
+      </div>
+    </div>
+    <div id="admin-panel" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <h2 style="font-size:18px;font-weight:500">Mis citas</h2>
+        <button class="lb" onclick="adminLogout()">Cerrar sesión</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><p>Hoy</p><strong id="stat-hoy">0</strong></div>
+        <div class="stat"><p>Esta semana</p><strong id="stat-semana">0</strong></div>
+        <div class="stat"><p>Total</p><strong id="stat-total">0</strong></div>
+      </div>
+      <div class="dsel" id="day-selector"></div>
+      <div id="admin-citas"></div>
+      <div id="admin-timeline"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REAGENDAR -->
+<div class="modal-bg" id="modal-reag" style="display:none" onclick="if(event.target===this)closeModal('modal-reag')">
+  <div class="modal">
+    <h3 id="modal-title">Reagendar cita</h3>
+    <div id="modal-body"></div>
+    <div class="modal-acts">
+      <button class="btn-s" style="margin:0" onclick="closeModal('modal-reag')">Cancelar</button>
+      <button class="btn-p" style="margin:0" id="modal-confirm-btn">Confirmar cambio</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CANCELAR ADMIN -->
+<div class="modal-bg" id="modal-cancel" style="display:none" onclick="if(event.target===this)closeModal('modal-cancel')">
+  <div class="modal">
+    <h3>Cancelar cita</h3>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem" id="modal-cancel-txt"></p>
+    <div class="modal-acts">
+      <button class="btn-s" style="margin:0" onclick="closeModal('modal-cancel')">Volver</button>
+      <button style="flex:1;padding:9px;border:none;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;cursor:pointer;background:var(--color-background-danger);color:var(--color-text-danger)" id="modal-cancel-confirm">Sí, cancelar cita</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_PASS = "nails2024";
+const TU_TELEFONO = "34600000000";
+const SERVICIOS = [
+  {id:"mani-semi",label:"Manicura semipermanente",dur:[60,90]},
+  {id:"mani-trad",label:"Manicura tradicional",dur:[60,90]},
+  {id:"pedi-semi",label:"Pedicura semipermanente",dur:[60,90]},
+  {id:"pedi-trad",label:"Pedicura tradicional",dur:[60,90]},
+  {id:"ext",label:"Extensión (gel/acrílico)",dur:[90,120]},
+];
+const HORARIOS = {2:{start:"14:30",end:"20:00"},4:{start:"14:30",end:"20:00"},1:{start:"14:30",end:"18:00"},3:{start:"14:30",end:"18:00"},5:{start:"14:30",end:"18:00"},6:{start:"09:00",end:"18:00"}};
+let cy,cm,selDate=null,selSlot=null,selServ=null,bookings=[],adminDay=null,reagId=null,cancelId=null,reagStep=null,reagDate=null,reagSlot=null;
+
+function load(){try{bookings=JSON.parse(localStorage.getItem('nb2')||'[]')}catch(e){bookings=[]}}
+function save(){try{localStorage.setItem('nb2',JSON.stringify(bookings))}catch(e){}}
+function toMin(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+function fromMin(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+
+function init(){
+  load();
+  const n=new Date();cy=n.getFullYear();cm=n.getMonth();
+  renderCal();renderServGrid();
+}
+
+function renderServGrid(){
+  document.getElementById('serv-grid').innerHTML=SERVICIOS.map(s=>`<div class="so" id="so-${s.id}" onclick="selServicio('${s.id}')"><span>${s.label}</span><small>${s.dur[0]}-${s.dur[1]} min</small></div>`).join('');
+}
+
+function selServicio(id){
+  selServ=id;
+  document.querySelectorAll('.so').forEach(e=>e.classList.remove('sl'));
+  document.getElementById('so-'+id).classList.add('sl');
+}
+
+function renderCal(gridId='cal-grid',titleId='cal-title',onSelect=null){
+  const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById(titleId).textContent=months[cm]+' '+cy;
+  const grid=document.getElementById(gridId);
+  const days=['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+  let html=days.map(d=>`<div class="cl">${d}</div>`).join('');
+  const first=new Date(cy,cm,1);
+  let sd=first.getDay()-1;if(sd<0)sd=6;
+  const dim=new Date(cy,cm+1,0).getDate();
+  const today=new Date();today.setHours(0,0,0,0);
+  for(let i=0;i<sd;i++)html+='<div class="cd"></div>';
+  for(let d=1;d<=dim;d++){
+    const date=new Date(cy,cm,d);
+    const dow=date.getDay();
+    const jd=dow===0?7:dow;
+    const past=date<today;
+    const ds=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let cls='cd';
+    if(past)cls+=' past';
+    else if(HORARIOS[jd])cls+=' av';
+    if(selDate===ds)cls+=' sl';
+    const cb=onSelect?`onclick="${onSelect}('${ds}',${jd})"`:((!past&&HORARIOS[jd])?`onclick="selectDate('${ds}',${jd})"`:``);
+    html+=`<div class="${cls}" ${cb}>${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function genSlots(dow){
+  const h=HORARIOS[dow];const slots=[];
+  let[hh,mm]=h.start.split(':').map(Number);
+  const[eh,em]=h.end.split(':').map(Number);
+  while(true){
+    slots.push(String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'));
+    mm+=30;if(mm>=60){mm-=60;hh++;}
+    if(hh>eh||(hh===eh&&mm>em))break;
+  }
+  return slots;
+}
+
+function takenSlots(dateStr,excludeId=null){
+  return bookings.filter(b=>b.date===dateStr&&b.id!==excludeId).map(b=>b.slot);
+}
+
+function renderSlots(dateStr,dow,containerId='slots-container',titleId='slots-title',onSelect=null){
+  const taken=takenSlots(dateStr,reagId);
+  const slots=genSlots(dow);
+  const p=dateStr.split('-');
+  const dn=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const do2=new Date(p[0],p[1]-1,p[2]).getDay();
+  if(titleId)document.getElementById(titleId).textContent=`Horarios para el ${dn[do2]} ${p[2]}/${p[1]}`;
+  document.getElementById(containerId).innerHTML=slots.map(s=>{
+    const tk=taken.includes(s);
+    const cb=onSelect?(!tk?`onclick="${onSelect}('${s}')"`:''):(!tk?`onclick="selectSlot('${s}')"`:'');
+    return`<div class="slot ${tk?'tk':''} ${!onSelect&&selSlot===s&&!tk?'sl':''} ${onSelect&&reagSlot===s&&!tk?'sl':''}" ${cb}>${s}</div>`;
+  }).join('');
+}
+
+function selectDate(ds,dow){
+  selDate=ds;selSlot=null;renderCal();
+  const p=ds.split('-');const dn=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const do2=new Date(p[0],p[1]-1,p[2]).getDay();
+  document.getElementById('slots-title').textContent=`Horarios para el ${dn[do2]} ${p[2]}/${p[1]}`;
+  renderSlots(ds,new Date(cy,cm,parseInt(p[2])).getDay()===0?7:new Date(cy,cm,parseInt(p[2])).getDay());
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
+}
+
+function selectSlot(s){
+  selSlot=s;
+  document.querySelectorAll('#slots-container .slot').forEach(e=>e.classList.remove('sl'));
+  event.target.classList.add('sl');
+}
+
+function toggleDom(){document.getElementById('dom-note').style.display=document.getElementById('chk-dom').checked?'block':'none'}
+
+function confirmar(){
+  const nombre=document.getElementById('inp-nombre').value.trim();
+  if(!nombre){alert('Por favor escribe tu nombre');return}
+  if(!selSlot){alert('Por favor selecciona un horario');return}
+  if(!selServ){alert('Por favor selecciona un servicio');return}
+  const sv=SERVICIOS.find(s=>s.id===selServ);
+  const b={id:Date.now(),date:selDate,slot:selSlot,nombre,servicio:sv.label,servicioId:selServ,durMin:sv.dur[0],durMax:sv.dur[1],decoracion:document.getElementById('chk-dec').checked,domicilio:document.getElementById('chk-dom').checked,ts:new Date().toISOString()};
+  bookings.push(b);save();showConfirm(b);
+}
+
+function showConfirm(b){
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step3').style.display='block';
+  const p=b.date.split('-');const fl=`${p[2]}/${p[1]}/${p[0]}`;
+  document.getElementById('summary-content').innerHTML=`
+    <div class="sr"><span>Fecha</span><span>${fl}</span></div>
+    <div class="sr"><span>Hora</span><span>${b.slot}</span></div>
+    <div class="sr"><span>Nombre</span><span>${b.nombre}</span></div>
+    <div class="sr"><span>Servicio</span><span>${b.servicio}</span></div>
+    ${b.decoracion?'<div class="sr"><span>Decoración</span><span>Sí</span></div>':''}
+    ${b.domicilio?'<div class="sr"><span>A domicilio</span><span>Contactar para dirección</span></div>':''}`;
+  const em=toMin(b.slot)+b.durMax;
+  const et=fromMin(em);
+  const gs=b.date.replace(/-/g,'')+'T'+b.slot.replace(':','')+'00';
+  const ge=b.date.replace(/-/g,'')+'T'+et.replace(':','')+'00';
+  document.getElementById('btn-gcal').href=`https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent('Cita manicura - '+b.nombre)}&dates=${gs}/${ge}&details=${encodeURIComponent('Servicio: '+b.servicio+(b.decoracion?' + decoración':'')+(b.domicilio?' (a domicilio)':''))}`;
+  const msg=`Hola! He reservado una cita:\n📅 Fecha: ${fl}\n⏰ Hora: ${b.slot}\n👤 Nombre: ${b.nombre}\n💅 Servicio: ${b.servicio}${b.decoracion?'\n✨ Con decoración':''}${b.domicilio?'\n🏠 A domicilio (te contacto para la dirección)':''}`;
+  document.getElementById('btn-wa').href=`https://wa.me/${TU_TELEFONO}?text=${encodeURIComponent(msg)}`;
+}
+
+function volverCal(){
+  document.getElementById('step1').style.display='block';
+  document.getElementById('step2').style.display='none';
+  selSlot=null;
+}
+
+function resetBooking(){
+  selDate=null;selSlot=null;selServ=null;
+  document.getElementById('step1').style.display='block';
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step3').style.display='none';
+  document.getElementById('inp-nombre').value='';
+  document.getElementById('chk-dec').checked=false;
+  document.getElementById('chk-dom').checked=false;
+  document.getElementById('dom-note').style.display='none';
+  document.querySelectorAll('.so').forEach(e=>e.classList.remove('sl'));
+  renderCal();
+}
+
+function prevMonth(){cm--;if(cm<0){cm=11;cy--;}renderCal()}
+function nextMonth(){cm++;if(cm>11){cm=0;cy++;}renderCal()}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((e,i)=>e.classList.toggle('active',['client','manage','admin'][i]===t));
+  ['client','manage','admin'].forEach(v=>document.getElementById('view-'+v).classList.toggle('active',v===t));
+}
+
+// GESTIONAR CITA (clienta)
+function buscarCita(){
+  const n=document.getElementById('search-nombre').value.trim().toLowerCase();
+  if(!n){alert('Escribe tu nombre');return}
+  load();
+  const today=new Date();today.setHours(0,0,0,0);
+  const res=bookings.filter(b=>b.nombre.toLowerCase()===n&&new Date(b.date+'T00:00:00')>=today);
+  const div=document.getElementById('search-results');
+  if(res.length===0){div.innerHTML='<div class="es">No encontramos citas con ese nombre, o ya han pasado.</div>';return}
+  div.innerHTML=res.map(b=>{
+    const p=b.date.split('-');const fl=`${p[2]}/${p[1]}/${p[0]}`;
+    return`<div class="cc">
+      <div class="cc-top">
+        <div class="ci"><h4>${b.nombre}</h4><p>${b.servicio}${b.decoracion?' · Con decoración':''}</p>${b.domicilio?'<span class="badge bdom">A domicilio</span>':''}</div>
+        <div class="ct"><strong>${b.slot}</strong>${fl}</div>
+      </div>
+      <div class="cc-acts">
+        <button class="btn-rea" onclick="openReagClient(${b.id})">Cambiar fecha/hora</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openReagClient(id){
+  load();
+  const b=bookings.find(x=>x.id===id);if(!b)return;
+  reagId=id;reagDate=null;reagSlot=null;reagStep='date';
+  const p=b.date.split('-');
+  document.getElementById('modal-title').textContent='Cambiar fecha y hora';
+  document.getElementById('modal-body').innerHTML=`
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px">Cita actual: <strong>${p[2]}/${p[1]} a las ${b.slot}</strong></p>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Selecciona nueva fecha:</p>
+    <div class="cal-nav" style="margin-bottom:8px">
+      <button onclick="prevMonthModal()">←</button>
+      <h2 id="cal-title" style="font-size:13px;font-weight:500"></h2>
+      <button onclick="nextMonthModal()">→</button>
+    </div>
+    <div class="cal-grid" id="cal-grid" style="margin-bottom:12px"></div>
+    <div id="modal-slots-wrap" style="display:none">
+      <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px" id="slots-title"></p>
+      <div class="slots" id="slots-container"></div>
+    </div>`;
+  renderCal('cal-grid','cal-title','selectReagDate');
+  document.getElementById('modal-confirm-btn').onclick=confirmReag;
+  document.getElementById('modal-reag').style.display='flex';
+}
+
+function selectReagDate(ds,dow){
+  reagDate=ds;reagSlot=null;
+  renderCal('cal-grid','cal-title','selectReagDate');
+  document.getElementById('modal-slots-wrap').style.display='block';
+  renderSlots(ds,dow,'slots-container','slots-title','selectReagSlot');
+}
+
+function selectReagSlot(s){
+  reagSlot=s;
+  document.querySelectorAll('#slots-container .slot').forEach(e=>e.classList.remove('sl'));
+  event.target.classList.add('sl');
+}
+
+function prevMonthModal(){cm--;if(cm<0){cm=11;cy--;}renderCal('cal-grid','cal-title','selectReagDate')}
+function nextMonthModal(){cm++;if(cm>11){cm=0;cy++;}renderCal('cal-grid','cal-title','selectReagDate')}
+
+function confirmReag(){
+  if(!reagDate||!reagSlot){alert('Selecciona una nueva fecha y hora');return}
+  load();
+  const idx=bookings.findIndex(x=>x.id===reagId);
+  if(idx<0){alert('Cita no encontrada');return}
+  bookings[idx].date=reagDate;bookings[idx].slot=reagSlot;
+  save();closeModal('modal-reag');
+  const p=reagDate.split('-');
+  alert(`¡Cita cambiada!\nNueva fecha: ${p[2]}/${p[1]}/${p[0]} a las ${reagSlot}`);
+  buscarCita();
+  if(document.getElementById('admin-panel').style.display==='block')renderAdmin();
+}
+
+// ADMIN
+function adminLogin(){
+  if(document.getElementById('admin-pwd').value===ADMIN_PASS){
+    document.getElementById('admin-login-wrap').style.display='none';
+    document.getElementById('admin-panel').style.display='block';
+    renderAdmin();
+  }else{document.getElementById('admin-err').textContent='Contraseña incorrecta'}
+}
+
+function adminLogout(){
+  document.getElementById('admin-login-wrap').style.display='block';
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('admin-pwd').value='';
+}
+
+function renderAdmin(){
+  load();
+  const today=new Date();today.setHours(0,0,0,0);
+  const ew=new Date(today);ew.setDate(ew.getDate()+7);
+  const ts=today.toISOString().split('T')[0];
+  document.getElementById('stat-hoy').textContent=bookings.filter(b=>b.date===ts).length;
+  document.getElementById('stat-semana').textContent=bookings.filter(b=>{const d=new Date(b.date+'T00:00:00');return d>=today&&d<ew}).length;
+  document.getElementById('stat-total').textContent=bookings.length;
+  const days=[...new Set(bookings.filter(b=>new Date(b.date+'T00:00:00')>=today).map(b=>b.date))].sort();
+  const sel=document.getElementById('day-selector');
+  if(!adminDay||!days.includes(adminDay))adminDay=days[0]||ts;
+  if(days.length===0){sel.innerHTML='';document.getElementById('admin-citas').innerHTML='<div class="es">Sin citas próximas</div>';document.getElementById('admin-timeline').innerHTML='';return}
+  sel.innerHTML=days.map(d=>{const p=d.split('-');return`<div class="db ${d===adminDay?'active':''}" onclick="adminSelDay('${d}')">${p[2]}/${p[1]}</div>`}).join('');
+  renderAdminDay(adminDay);
+}
+
+function adminSelDay(d){adminDay=d;renderAdmin()}
+
+function renderAdminDay(ds){
+  const citas=bookings.filter(b=>b.date===ds).sort((a,b)=>a.slot.localeCompare(b.slot));
+  const div=document.getElementById('admin-citas');
+  if(citas.length===0){div.innerHTML='<div class="es">Sin citas este día</div>';document.getElementById('admin-timeline').innerHTML='';return}
+  div.innerHTML=citas.map(b=>`
+    <div class="cc">
+      <div class="cc-top">
+        <div class="ci">
+          <h4>${b.nombre}</h4>
+          <p>${b.servicio}${b.decoracion?' · Con decoración':''}</p>
+          ${b.domicilio?'<span class="badge bdom">A domicilio</span>':''}
+          ${b.decoracion&&!b.domicilio?'<span class="badge bdec">+ Decoración</span>':''}
+        </div>
+        <div class="ct"><strong>${b.slot}</strong>~${fromMin(toMin(b.slot)+b.durMax)}<br><span style="font-size:10px;color:var(--color-text-tertiary)">${b.durMin}-${b.durMax}min</span></div>
+      </div>
+      <div class="cc-acts">
+        <button class="btn-rea" onclick="openReagAdmin(${b.id})">Reagendar</button>
+        <button class="btn-can" onclick="openCancelAdmin(${b.id})">Cancelar cita</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('admin-timeline').innerHTML='<p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;margin-top:1rem">Bloque estimado del día</p>'+
+    citas.map(b=>`<div class="tl-row"><div class="tl-t">${b.slot}</div><div class="tl-b"><p>${b.nombre} · ${b.servicio}${b.decoracion?' + dec':''}</p><small>${b.durMin}-${b.durMax} min → hasta ~${fromMin(toMin(b.slot)+b.durMax)}</small></div></div>`).join('');
+}
+
+function openReagAdmin(id){
+  load();
+  const b=bookings.find(x=>x.id===id);if(!b)return;
+  reagId=id;reagDate=null;reagSlot=null;
+  const p=b.date.split('-');
+  document.getElementById('modal-title').textContent='Reagendar cita';
+  document.getElementById('modal-body').innerHTML=`
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px">Cita de <strong>${b.nombre}</strong>: ${p[2]}/${p[1]} a las ${b.slot}</p>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Selecciona nueva fecha:</p>
+    <div class="cal-nav" style="margin-bottom:8px">
+      <button onclick="prevMonthModal()">←</button>
+      <h2 id="cal-title" style="font-size:13px;font-weight:500"></h2>
+      <button onclick="nextMonthModal()">→</button>
+    </div>
+    <div class="cal-grid" id="cal-grid" style="margin-bottom:12px"></div>
+    <div id="modal-slots-wrap" style="display:none">
+      <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px" id="slots-title"></p>
+      <div class="slots" id="slots-container"></div>
+    </div>`;
+  renderCal('cal-grid','cal-title','selectReagDate');
+  document.getElementById('modal-confirm-btn').onclick=confirmReag;
+  document.getElementById('modal-reag').style.display='flex';
+}
+
+function openCancelAdmin(id){
+  load();
+  const b=bookings.find(x=>x.id===id);if(!b)return;
+  cancelId=id;
+  const p=b.date.split('-');
+  document.getElementById('modal-cancel-txt').textContent=`¿Segura que quieres cancelar la cita de ${b.nombre} el ${p[2]}/${p[1]} a las ${b.slot}? Esta acción no se puede deshacer.`;
+  document.getElementById('modal-cancel-confirm').onclick=confirmCancel;
+  document.getElementById('modal-cancel').style.display='flex';
+}
+
+function confirmCancel(){
+  load();
+  bookings=bookings.filter(x=>x.id!==cancelId);
+  save();closeModal('modal-cancel');renderAdmin();
+}
+
+function closeModal(id){document.getElementById(id).style.display='none';reagId=null;reagDate=null;reagSlot=null;}
+
+init();
+</script>
